@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>💖 Cuestionario de Momentos Bonitos 💖</title>
+  <style>
+    :root {
+      --pink:#ff77a9;
+      --hot:#ff3b80;
+      --bg1:#ffe0e9;
+      --bg2:#ffd1dc;
+      --ok:#34c759;
+      --bad:#ff4d4f;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: 'Nunito', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+      min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+      background: radial-gradient(1200px 600px at 10% 10%, var(--bg1), transparent),
+                  radial-gradient(1200px 600px at 90% 90%, var(--bg2), transparent),
+                  linear-gradient(135deg, #fff, #ffe9f2);
+      color:#333;
+      overflow-x:hidden;
+    }
+    .wrap{ width: min(920px, 100%); }
+
+    .card{
+      background:#fff; border-radius:24px; box-shadow:0 12px 30px rgba(255,59,128,.25);
+      padding:28px; position:relative; overflow:hidden;
+    }
+    h1{ margin:0 0 6px; text-align:center; font-weight:900; letter-spacing:.4px; color:var(--hot); }
+    p.sub{ margin:.25rem 0 1rem; text-align:center; color:#6b6b6b }
+
+    /* Floating hearts */
+    .hearts{ position:absolute; inset:0; pointer-events:none; overflow:hidden }
+    .heart{ position:absolute; bottom:-20px; font-size:18px; opacity:.7; animation: float 6s linear infinite; }
+    @keyframes float{ to{ transform: translateY(-120vh) rotate(360deg); opacity:0 } }
+
+    .q{
+      border:1px solid #ffe0eb; border-radius:16px; padding:14px 14px 10px; margin:12px 0;
+      background: #fff8fb;
+    }
+    .q-title{ font-weight:800; margin-bottom:8px; color:#ff2e73 }
+    .opts{ display:grid; gap:8px; }
+    label.opt{
+      border:1px solid #ffd3e0; border-radius:12px; padding:10px 12px; cursor:pointer; display:flex; align-items:center; gap:10px; transition:.2s;
+      background:#fff;}
+    label.opt:hover{ box-shadow:0 4px 14px rgba(255,59,128,.15); transform: translateY(-1px) }
+    .opt input{ accent-color: var(--hot); }
+
+    .msg{ margin-top:8px; font-size:.95rem; font-weight:700; display:none }
+    .msg.bad{ color:var(--bad) }
+    .msg.ok{ color:var(--ok) }
+
+    .actions{ display:flex; gap:10px; justify-content:center; margin-top:16px }
+    .btn{
+      border:none; border-radius:999px; padding:12px 22px; font-weight:800; cursor:pointer; transition:.2s; box-shadow:0 10px 20px rgba(0,0,0,.06);
+      background:linear-gradient(135deg, var(--pink), var(--hot)); color:#fff; letter-spacing:.3px; }
+    .btn:hover{ transform:translateY(-1px); box-shadow:0 12px 26px rgba(255,59,128,.35) }
+    .btn:disabled{ opacity:.45; cursor:not-allowed; filter:grayscale(.2); box-shadow:none }
+
+    /* Final panel */
+    .final{ display:none; text-align:center; padding:20px; }
+    .final .title{ font-size:1.8rem; color:var(--hot); font-weight:900; margin:8px 0 4px }
+    .final p{ color:#555 }
+    .url-card{ margin:14px auto 0; max-width:560px; padding:16px; border-radius:18px; background:#fff8fb; border:1px dashed #ffbcd1 }
+    .link{
+      display:inline-flex; align-items:center; gap:10px; padding:12px 18px; border-radius:999px; text-decoration:none; font-weight:900; margin-top:10px;
+      background: linear-gradient(135deg, var(--pink), var(--hot)); color:#fff; box-shadow:0 10px 20px rgba(255,59,128,.35);
+      transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+      animation: beat 1.25s ease-in-out infinite;
+    }
+    .link:hover{ transform: scale(1.05); box-shadow:0 12px 26px rgba(255,59,128,.45); filter: brightness(1.04) }
+    @keyframes beat{ 0%{ transform: scale(1) } 20%{ transform: scale(1.06) } 35%{ transform: scale(1) } 55%{ transform: scale(1.06) } 100%{ transform: scale(1) } }
+
+    /* Correct/incorrect highlighting */
+    .q.ok{ outline:2px solid rgba(52,199,89,.35) }
+    .q.bad{ outline:2px solid rgba(255,77,79,.35) }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="hearts" id="hearts"></div>
+      <h1>💞 Nuestro Cuestionario de Momentos Bonitos</h1>
+      <p class="sub">Solo podrás avanzar cuando <b>todas</b> las respuestas sean correctas. Si fallas, te diré cuál pregunta está mal para que la mejores 💪✨</p>
+
+      <form id="quiz" autocomplete="off">
+        <!-- Preguntas se renderizan aquí -->
+      </form>
+
+      <div class="actions">
+        <button id="btnVerificar" class="btn" type="button">Verificar respuestas</button>
+        <button id="btnContinuar" class="btn" type="button" disabled>Continuar</button>
+      </div>
+
+      <section id="final" class="final">
+        <h2 class="title">🎉 ¡Perfecto, amor! ¡Todo correcto! 🎉</h2>
+        <p>Has desbloqueado un mensajito especial y una sorpresa 😘</p>
+        <div class="url-card">
+          <p style="margin:0 0 10px">Haz clic aquí para abrir nuestra sorpresa:</p>
+          <a class="link" id="sorpresaLink" href="https://drive.google.com/file/d/1UvleN0r8kO64po1gcAOEHzdD2Z-chaGV/view?usp=sharing" target="_blank" rel="noopener noreferrer">🌹 Ver tu regalo especial 🌹</a>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // =============== CONFIGURA AQUÍ TUS PREGUNTAS ==================
+    const preguntas = [
+      { id: 'p1', pregunta: '¿Cuál fue nuestra primera salida?', opciones: ['Al cine', 'Al parque', 'Al gym', 'A cenar tacos'], correcta: 2 },
+      { id: 'p2', pregunta: '¿Dónde fue la primera vez que te di un beso?', opciones: ['En el cine', 'En el carro', 'En la casa de tus papás', 'En la escuela'], correcta: 1 },
+      { id: 'p3', pregunta: '¿Qué fecha te pedí ser mi novia?', opciones: ['24 de marzo', '1 de abril', '25 de marzo', '16 de febrero'], correcta: 2 },
+      { id: 'p4', pregunta: '¿Cuál es mi comida favorita?', opciones: ['Pizza', 'Tacos al pastor y birria', 'Pollo empanizado con jamón y queso', 'Carne asada con salsa verde'], correcta: 2 },
+      { id: 'p5', pregunta: '¿Cuál ha sido mi PR en press banca en el gym?', opciones: ['150 kg', '80 kg', '120 kg', '90 kg'], correcta: 2 },
+      { id: 'p6', pregunta: '¿Cuántas rosas tenía tu ramo el día que fuimos novios?', opciones: ['50', '12', '60', '100'], correcta: 2 },
+      { id: 'p7', pregunta: '¿Qué cené el día que te fui a ver al hospital con tus hermanos?', opciones: ['Pizza', 'Tacos', 'Hamburguesa', 'Hot dogs'], correcta: 2 },
+      { id: 'p8', pregunta: '¿Cuál fue la palabra random que nos unió en la conversación?', opciones: ['Tiiii', 'Máquina', 'PVP manco', 'hola'], correcta: 2 },
+      { id: 'p9', pregunta: '¿Qué es lo que más me emociona de nuestro futuro, incluso más que lo planeado?', opciones: ['Compartir momentos muy cercanos y cariñosos contigo', 'Tener una casa grande y un negocio para estar juntos', 'Despertar a tu lado sabiendo que eres mi esposa y viajar juntos', 'Todas las anteriores'], correcta: 3 },
+      { id: 'p10', pregunta: '¿Me amas?', opciones: ['Un poquito', 'Mucho', 'No tienes idea cuánto', 'Más o menos'], correcta: 2 }
+    ];
+
+    // ================== ENLACE FINAL PERSONALIZADO =================
+    const URL_FINAL = 'https://drive.google.com/file/d/1UvleN0r8kO64po1gcAOEHzdD2Z-chaGV/view?usp=sharing';          // <-- URL personalizada
+    const TEXTO_ENLACE = '🌹 Ver tu regalo especial 🌹';
+
+    // ================== RENDER DEL QUIZ ============================
+    const quiz = document.getElementById('quiz');
+    function render(){
+      quiz.innerHTML = preguntas.map((q,qi)=>{
+        const name = `q_${qi}`;
+        const opts = q.opciones.map((op, i)=>{
+          const id = `${name}_${i}`;
+          return `
+            <label class="opt" for="${id}">
+              <input id="${id}" class="opt-input" type="radio" name="${name}" value="${i}" />
+              <span>${op}</span>
+            </label>`;
+        }).join('');
+        return `
+          <div class="q" id="box_${name}" data-correcta="${q.correcta}">
+            <div class="q-title">${qi+1}. ${q.pregunta}</div>
+            <div class="opts">${opts}</div>
+            <div class="msg bad" id="msg_${name}">❌ Respuesta incorrecta. ¡Inténtalo de nuevo!</div>
+            <div class="msg ok" id="ok_${name}">✅ ¡Bien! Esta está correcta.</div>
+          </div>`;
+      }).join('');
+    }
+    render();
+
+    // ================== LÓGICA DE VALIDACIÓN =======================
+    const btnVerificar = document.getElementById('btnVerificar');
+    const btnContinuar = document.getElementById('btnContinuar');
+    const final = document.getElementById('final');
+
+    function verificarTodo(){
+      let todoOk = true;
+      const cajas = Array.from(document.querySelectorAll('.q'));
+      cajas.forEach(box=>{
+        const correcta = Number(box.dataset.correcta);
+        const name = box.querySelector('input[type="radio"]').name;
+        const sel = document.querySelector(`input[name="${name}"]:checked`);
+        const msgBad = document.getElementById(`msg_${name}`);
+        const msgOk = document.getElementById(`ok_${name}`);
+        msgBad.style.display = 'none';
+        msgOk.style.display = 'none';
+        box.classList.remove('ok','bad');
+        if(!sel){
+          todoOk = false;
+          msgBad.textContent = '⚠️ Aún no has elegido una opción.';
+          msgBad.style.display = 'block';
+          box.classList.add('bad');
+          return;
+        }
+        if(Number(sel.value) === correcta){
+          msgOk.style.display = 'block';
+          box.classList.add('ok');
+        } else {
+          todoOk = false;
+          msgBad.textContent = '❌ Respuesta incorrecta. ¡Inténtalo de nuevo!';
+          msgBad.style.display = 'block';
+          box.classList.add('bad');
+        }
+      });
+      btnContinuar.disabled = !todoOk;
+      if(todoOk){ celebracion(); }
+      return todoOk;
+    }
+
+    btnVerificar.addEventListener('click', verificarTodo);
+
+    btnContinuar.addEventListener('click', ()=>{
+      if(!verificarTodo()) return; // Solo avanza si todo es correcto
+      document.querySelector('.actions').style.display = 'none';
+      final.style.display = 'block';
+      // Aplica URL y texto al botón final (con latido)
+      const link = document.getElementById('sorpresaLink');
+      if (link) { link.href = URL_FINAL; link.textContent = TEXTO_ENLACE; }
+      scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+
+    // ============== DECORACIÓN: corazones flotando =================
+    const hearts = document.getElementById('hearts');
+    function makeHeart(){
+      const e = document.createElement('div');
+      e.className = 'heart';
+      e.textContent = ['💖','💗','💘','💝'][Math.floor(Math.random()*4)];
+      e.style.left = Math.random()*100 + 'vw';
+      e.style.animationDuration = (4 + Math.random()*4) + 's';
+      e.style.fontSize = (16 + Math.random()*20) + 'px';
+      hearts.appendChild(e);
+      setTimeout(()=> e.remove(), 8000);
+    }
+    const heartTimer = setInterval(makeHeart, 800);
+
+    // Pequeña celebración visual cuando todo está correcto
+    function celebracion(){
+      for(let i=0;i<12;i++) setTimeout(makeHeart, i*120);
+    }
+  </script>
+</body>
+</html>
